@@ -1,0 +1,144 @@
+MAIN:
+
+- You will need to declare the following custom type
+
+
+/*
+- "mercType" will maintain these counters (zombies, spiders etc)
+- It will store for each mercenary how many zombies defeated, spiders, demons, how many
+civilians saved
+- These values together used with the multipliers are used to compute the mercenary score
+*/
+struct mercType
+{
+/ tracks how many of each monsters is
+// defeated and civilian saved for a
+// mercenary
+int zombies ;
+int spiders ;
+int drainDeimos ;
+int zombieDogs ;
+int hunters ;
+int nemesis ;
+int civilians ;
+
+
+
+/*
+Recommended to implement a few of these in the class:
+*/
+// default constructor , optional but can
+// be helpful
+mercType ()
+{
+/*
+- Can set all the mercenaries (Zombie, Spiders, etc) to 0 here in the constructor
+- Whenever we are pushing the mercenaries into the priorityQ, we can push a mercenary name, followed
+by an empty/default object (mercType())
+*/
+}
+
+
+
+/*
+- Want to implement some comparison operator > < >= <=
+- DO NOT try to overload "?" operator (not such thing)
+- "?" is open for us whether we want it to be > <
+- For the increaseKey, we have to update a mercenary by adding amount of zombies
+or updated amount of zombies defeated, we have to overload + or += operator
+because inside priorityQ class, we don't want to do anything specific
+for example, we have a priorityType
+
+t1 key;  is a string
+t2 priority; is a mercType
+
+we can't assume this, so we have to write the code that we don't know what t1 or t2 are
+so if we code: "heapArray[0].priority.zombies" it'll make it too specific to the mercType
+at that point we may as well not write our program with templates
+
+- We WANT to use templates, if we have to update in a heapArray index 3 mercenary zombie amount
+we can't say heapArray[3].priority.zombies + 3, (hints in DND increase function on how to do this)
+*/
+// do not actual try to overload the
+// question mark operator , you can overload
+// any comparison operator you like and it will
+// be used in your bubbleUp and bubbleDown
+bool operator ?( const mercType & rhs ) const
+{
+}
+// You might need to overload + or +=
+// operators , would be needed in the
+// increaseKey function
+};
+
+
+/*
+- PriorityQ of mercType
+*/
+You will need to declare the following
+priorityQ < std :: string , mercType > mercenaries ;
+
+Each element of the priotityQ contains a mercenary name (std::string) and their priority (mercType
+and the comparison operator is used to maintain the leader), you will be given two input files, the first
+input files contains a list of mercenaries names (one name per line and each line is terminated by an end of
+line characer) and each mercenary is inserted into the priorityQ using its name as the first argument and
+mercType() (a default initial object) as the second argument.
+
+
+Main Overview
+- The first thing we're gonna do, is we're given an input file
+- This input file contains all the mercenaries names (mercenaries.txt)
+All we have to do is one by one, push each mercenary onto our priorityQ
+- They "key" will be the name
+- Then the "priority" value will be passed as a default mercType object
+Since we have our own custom constructor (default constructor),
+simply pass in the name (read), use default constructor as an actual parameter ( our default argument)
+- Then simply push them onto our priorityQ
+So which element at the very top will not be relevant (as it'll be a tie as this moment)
+
+- Then we're going to simulate our mercenary mode program
+
+Once we put the names in, we'll have our second input file and it'll be our simulation file:
+MercenaryName MonsterName/Civilian Amount
+ - Second input file (simulation0#.txt)
+ Example in simulation01.txt:
+
+ MercenaryName = Ethan, MonsterName = Zombie, Amount = 1
+ - So Ethan took out 1 Zombie
+
+ The next line:
+ MercenaryName = Claire, Civilian = Civilians, Amount = 10
+ - Claire saved 10 civilians
+
+ etc...
+
+
+ - So each line of this file, will need to be parsed (it'll be easy, no comma separated)
+ so just use the input operator to separate these three components
+ - Read in the name, the monster, and amount
+ How?
+ - We can create an temporary object (mercType object), then have the zombies amount
+ (the number type) object to be one
+ - Then call increaseKey, pass in the name, and then pass in a mercType object that contains only one zombie
+ - Then this object will be added to Ethan's priority in the priorityQ
+
+ Then get the next line:
+ - Claire simply instead update Claire in the priorityQ, by reading in "Claire"
+ - Create another default object of mercType
+ - Assign 10 to the civilians field of that mercType object, the rest will all be 0 for that mercType object
+ - Then call increaseKey, pass in "Claire", then pass in a mercType object that contains "10" for "civlians" amount
+ and 0 for everything else
+ - Then within increaseKey, it'll update Claires priority by adding 10 civlians and so forth..
+
+ Every line is going to cause us to call increaseKey, which will update the priorityQ after we have
+ one of the mercenaries updates
+
+ Then, we're going to do this until the END OF FILE (EOF) is read
+ - For the output, everytime we have a new leader, output the name of the leader and their current score
+ - We keep going until EOF, we simply output the ranks of each mercenary
+ Thats all.
+
+ We compiled main,
+ - include priority.h into main (as its a template file)
+ - priority.h contains priorityQ declaration and implementations, so only
+ just compile main

@@ -1,0 +1,177 @@
+Understanding unordered_map<string, list<string> >
+- Key (string): Represents the room name
+- Value (list <string>): Represents a list of neighboring rooms connected
+to the key room
+
+Visual: Imagine each room as a node and each connection (door) as a directed edge from
+one room to another
+
+unordered_map:
+{
+    "WestStairway1F" : ["DarkRoom", "EvidenceRoom", "WindingCorridor", "WestStairway2F"],
+    "DarkRoom"        : ["MainHall1F"],
+    "EvidenceRoom"    : ["MainHall1F"],
+    // ... other rooms
+}
+
+What <string, list <string>> Means
+- String: The name of a room (ex. "WestStairway1F)
+- list<string>: All rooms directly accessible from that room
+
+Example: unordered_map<string, list<string>> rpdMap;
+- Key: "WestStairway1F"
+- Value: ["DarkRoom", "EvidenceRoom", "WindingCorridor", "WestStairway2F"]
+
+
+Whats happening in:
+while (rpdFile >> from >> destination) {
+    rpdMap[from].push_back(destination);
+}
+
+We read in a line : WestStairway1F DarkRoom
+from = "WestStairway1F"
+destination = "DarkRoom:
+
+We update rpdMap (push_back);
+rpdMap[from]: gets list of neighbors for WestStairWay1F
+push_back(dest): Adds "DarkRoom" to the list
+
+After execution:
+rpdMap["WestStairway1F"] = ["DarkRoom"];
+
+Again:
+rpdMap["WestStairway1F"] = ["DarkRoom", "EvidenceRoom"];
+
+Final:
+WestStairway1F
+    ├── DarkRoom
+    ├── EvidenceRoom
+    ├── WindingCorridor
+    └── WestStairway2F
+
+DarkRoom
+    └── MainHall1F
+
+EvidenceRoom
+    └── MainHall1F
+
+    Overall it's a string (Variable) that has a list of strings
+
+    Note:
+    You may notice when you output the rpdMap:
+    for (const auto &pair : rpdMap) {
+        cout << "Room: " << pair.first << " -> Neighbors:";
+        for (const auto &neighbor : pair.second) {
+            cout << " " << neighbor;
+        }
+        cout << endl;
+    }
+
+    It will be out of order, this is because unordered_maps use a has function
+    to calculate a hash value for that string, so the keys may appear to be randomly
+    ordered because they are stoed based on their values, not the order in which they were inserted!
+
+    Understanding unordered_map<string, int> nemesisLocations
+    - Key (String): The name of a room (ex. "DarkRoom")
+    - Value (int): Represents:
+    Pos number : Damage Nemesis causes
+    Neg number: Healing item found
+    Zero: No danger in room
+
+Example: Let's say in Nemesis.txt it contains the following:
+
+MainHall1F 7
+DarkRoom -3
+EvidenceRoom 0
+Courtyard 5
+
+In:  while (nemesisFile >> location >> value) {
+      nemesisLocations[location] = value;
+     }
+
+     Iteration 1: Read MainHall1F 7
+     Action: nemesisLocations["MainHall1F"] = 7;
+
+     Map:
+     {
+         "MainHall1F" : 7
+     }
+
+     Iteration 2: DarkRoom -3
+     Action: nemesisLocations["DarkRoom"] = -3;
+
+     Map:
+     {
+         "MainHall1F" : 7,
+         "DarkRoom"    : -3
+     }
+
+     Overall:
+     +------------------+-------+
+     |      Room        | Value |
+     +------------------+-------+
+     | "MainHall1F"     |   7   |  // Nemesis can cause 7 damage
+     | "DarkRoom"       |  -3   |  // Healing item available
+     | "EvidenceRoom"   |   0   |  // No danger
+     | "Courtyard"      |   5   |  // Nemesis can cause 5 damage
+     +------------------+-------+
+
+
+    Break down of how predecessor gets populated:
+     // Move onto neighboring rooms
+     for(auto neighbor:rpdMap[jillsLocation]) {
+      if(escapeRPD(neighbor, "Courtyard", jillsHealth, rpdMap, predecessor,
+       healthInRoom, nemesisLocations)) {
+       // If true, add room to predecessor to construct safe path (reversed)
+       predecessor[neighbor] = jillsLocation;
+       return true;
+      }
+     }
+     // No safe path found
+     return false;
+    }
+
+    1. Iterate through neighbors:
+    for(auto neighbor : rpdMap[jillsLocation])
+
+    - This loop goes through each room (neighbor) directly connected to Jill's current
+    location using the adjacency list rpdMap
+
+    Example: If jillsLocation is "DarkRoom" and "Darkroom" is connected to "Mainhall1F"
+    and "EvidenceRoom", the loop will iterate over these two neighbors
+
+    2. Recursive DFS Call:
+    if(escapeRPD(neighbor, "Courtyard", jillsHealth, rpdMap, predecessor,
+       healthInRoom, nemesisLocations))
+
+
+    Scenario Recap
+
+    	•	Current Room: "DarkRoom"
+    	•	Neighbor Being Explored: "WestOffice"
+    	•	Outcome: Exploring "WestOffice" returns false (Jill dies).
+
+    Step-by-Step Breakdown
+
+    	1.	Exploring "DarkRoom":
+    	•	Neighbor: "WestOffice"
+    	•	Recursive Call: escapeRPD("WestOffice", "Courtyard", jillsHealth, ...)
+    	•	Result: false (Jill dies in "WestOffice")
+    	2.	Back to "DarkRoom" Loop:
+    	•	Check if(escapeRPD(...)):
+    	•	Since it returned false, the if block does not execute.
+    	•	Loop Continues:
+    	•	Move to the next neighbor of "DarkRoom" (if any).
+    	3.	No More Neighbors in "DarkRoom":
+    	•	After Loop Ends:
+    	•	All neighbors have been explored and none led to a successful escape.
+    	•	Function Returns false:
+    	•	Indicates that no path from "DarkRoom" leads to "Courtyard".
+
+    What Happens Next?
+
+    	•	Back to Previous Room (e.g., "WestStairway1F"):
+    	•	Loop Continues:
+    	•	It moves to the next neighbor of "WestStairway1F" to try a different path.
+    	•	predecessor Map:
+    	•	Since "DarkRoom" didn’t lead to escape, predecessor remains unchanged for "DarkRoom".
